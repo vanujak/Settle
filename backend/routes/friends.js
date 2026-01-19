@@ -60,10 +60,25 @@ router.post('/add', protect, async (req, res) => {
             return res.status(400).json({ message: 'User is already your friend' });
         }
 
-        user.friends.push(friend._id);
-        await user.save();
+        // Add friend to user's friend list (Atomic update)
+        await User.findByIdAndUpdate(user._id, {
+            $addToSet: { friends: friend._id }
+        });
 
-        console.log('Friend added successfully');
+        // Mutual add: Add current user to friend's friends list (Atomic update)
+        await User.findByIdAndUpdate(friend._id, {
+            $addToSet: { friends: user._id }
+        });
+
+        console.log(`Friendship created between ${user.username} and ${friend.username}`);
+
+        if (req.io) {
+            req.io.to(friend._id.toString()).emit('friends_refresh');
+            console.log(`Socket: Emitted friends_refresh to ${friend.username} (${friend._id})`);
+        } else {
+            console.warn('Socket: req.io is undefined');
+        }
+
         res.status(200).json({
             message: 'Friend added successfully', friend: {
                 _id: friend._id,
@@ -98,10 +113,18 @@ router.post('/remove', protect, async (req, res) => {
     const { friendId } = req.body;
 
     try {
-        const user = await User.findById(req.user._id);
-        if (user.friends) {
-            user.friends = user.friends.filter(id => id.toString() !== friendId);
-            await user.save();
+        // Remove friend from user's list
+        await User.findByIdAndUpdate(req.user._id, {
+            $pull: { friends: friendId }
+        });
+
+        // Mutual remove: Remove user from friend's list
+        await User.findByIdAndUpdate(friendId, {
+            $pull: { friends: req.user._id }
+        });
+
+        if (req.io) {
+            req.io.to(friendId).emit('friends_refresh');
         }
 
         res.json({ message: 'Friend removed' });

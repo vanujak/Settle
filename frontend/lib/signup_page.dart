@@ -34,8 +34,22 @@ class _SignupPageState extends State<SignupPage> {
         _mobileController.text.isEmpty ||
         _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields'), backgroundColor: Colors.orange),
-      );
+        SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                const Text('Please fill in all fields', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+      ));
       return;
     }
 
@@ -53,14 +67,50 @@ class _SignupPageState extends State<SignupPage> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Account created! Welcome ${user['username']}')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Color(0xFF4CA1AF)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                  'Account created! Welcome ${user['firstName']}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                )),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Color(0xFF4CA1AF), width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+          ),
         );
         Navigator.of(context).pop(); // Go back to login
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.redAccent),
+                const SizedBox(width: 12),
+                Expanded(child: Text(e.toString(), style: const TextStyle(color: Colors.white))),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.redAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
         );
       }
     } finally {

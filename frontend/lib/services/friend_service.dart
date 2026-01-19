@@ -7,7 +7,7 @@ class FriendService {
 
   Future<List<dynamic>> getFriends(String token) async {
     final response = await http.get(
-      Uri.parse(baseUrl),
+      Uri.parse('$baseUrl?t=${DateTime.now().millisecondsSinceEpoch}'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
