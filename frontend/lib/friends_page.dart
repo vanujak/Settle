@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'services/friend_service.dart';
 
 class FriendsPage extends StatefulWidget {
@@ -15,11 +16,56 @@ class _FriendsPageState extends State<FriendsPage> {
   List<dynamic> _friends = [];
   bool _isLoading = true;
   final _usernameController = TextEditingController();
+  late IO.Socket socket;
 
   @override
   void initState() {
     super.initState();
     _fetchFriends();
+    _initSocket();
+  }
+
+  void _initSocket() {
+    socket = IO.io('http://localhost:5000', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
+
+    socket.connect();
+
+    socket.onConnect((_) {
+      print('Socket connected');
+      final userId = _getUserIdFromToken(widget.token);
+      if (userId != null) {
+        socket.emit('join_user', userId);
+      }
+    });
+
+    socket.on('friends_refresh', (_) {
+      print('Received friends_refresh event');
+      _fetchFriends();
+    });
+  }
+
+  String? _getUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final payload = base64Url.normalize(parts[1]);
+      final resp = utf8.decode(base64Url.decode(payload));
+      final payloadMap = jsonDecode(resp);
+      return payloadMap['id'];
+    } catch (e) {
+      print('Error decoding token: $e');
+      return null;
+    }
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    _usernameController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchFriends() async {
@@ -34,9 +80,10 @@ class _FriendsPageState extends State<FriendsPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading friends: ${e.toString()}'), backgroundColor: Colors.red),
-        );
+        // Suppress error snackbar on auto-refresh to avoid annoyance
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Error loading friends: ${e.toString()}'), backgroundColor: Colors.red),
+        // );
       }
     }
   }
@@ -52,7 +99,7 @@ class _FriendsPageState extends State<FriendsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Friend added successfully!')),
         );
-        _fetchFriends(); // Refresh list
+        _fetchFriends(); // Refresh list immediately for the initiator
       }
     } catch (e) {
       if (mounted) {
@@ -71,7 +118,7 @@ class _FriendsPageState extends State<FriendsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Friend removed')),
         );
-        _fetchFriends(); // Refresh list
+        _fetchFriends(); // Refresh list immediately for the initiator
       }
     } catch (e) {
       if (mounted) {
@@ -137,10 +184,19 @@ class _FriendsPageState extends State<FriendsPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              IconButton(
-                onPressed: _showAddFriendDialog,
-                icon: const Icon(Icons.person_add, color: Colors.white, size: 28),
-                tooltip: 'Add Friend',
+              Row(
+                children: [
+                   IconButton(
+                    onPressed: _fetchFriends,
+                    icon: const Icon(Icons.refresh, color: Colors.white, size: 28),
+                    tooltip: 'Refresh List',
+                  ),
+                  IconButton(
+                    onPressed: _showAddFriendDialog,
+                    icon: const Icon(Icons.person_add, color: Colors.white, size: 28),
+                    tooltip: 'Add Friend',
+                  ),
+                ],
               ),
             ],
           ),

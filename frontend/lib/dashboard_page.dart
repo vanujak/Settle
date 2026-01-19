@@ -27,16 +27,9 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  late final List<Widget> _pages;
-
   @override
   void initState() {
     super.initState();
-    _pages = [
-      _buildHomeContent(),
-      const CreateBillPage(),
-      FriendsPage(token: widget.token),
-    ];
   }
 
   Widget _buildHomeContent() {
@@ -102,6 +95,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _buildHomeContent(),
+      const CreateBillPage(),
+      FriendsPage(token: widget.token),
+    ];
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -116,10 +115,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         child: SafeArea(
-          child: IndexedStack(
-            index: _selectedIndex,
-            children: _pages,
-          ),
+          child: pages[_selectedIndex],
         ),
       ),
       bottomNavigationBar: Theme(
