@@ -14,21 +14,23 @@ const generateToken = (id) => {
 // @route   POST /api/auth/signup
 // @access  Public
 router.post('/signup', async (req, res) => {
-    const { name, dob, gender, email, mobile, password } = req.body;
+    const { firstName, lastName, username, dob, gender, email, mobile, password } = req.body;
 
     try {
         // Check if user exists
         const userExists = await User.findOne({
-            $or: [{ email }, { mobile }]
+            $or: [{ email }, { mobile }, { username }]
         });
 
         if (userExists) {
-            return res.status(400).json({ message: 'User with this email or mobile already exists' });
+            return res.status(400).json({ message: 'User with this email, mobile, or username already exists' });
         }
 
         // Create user
         const user = await User.create({
-            name,
+            firstName,
+            lastName,
+            username,
             dob,
             gender,
             email,
@@ -39,7 +41,7 @@ router.post('/signup', async (req, res) => {
         if (user) {
             res.status(201).json({
                 _id: user._id,
-                name: user.name,
+                username: user.username,
                 email: user.email,
                 token: generateToken(user._id),
             });
@@ -64,7 +66,7 @@ router.post('/login', async (req, res) => {
         if (user && (await user.matchPassword(password))) {
             res.json({
                 _id: user._id,
-                name: user.name,
+                username: user.username,
                 email: user.email,
                 token: generateToken(user._id),
             });

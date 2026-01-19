@@ -30,12 +30,15 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Welcome back, ${user['name']}!')),
+          SnackBar(content: Text('Welcome back, ${user['username']}!')),
         );
         // Navigate to dashboard
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => DashboardPage(userName: user['name']),
+            builder: (context) => DashboardPage(
+              userName: user['username'],
+              token: user['token'],
+            ),
           ),
         );
       }

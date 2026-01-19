@@ -8,7 +8,9 @@ class AuthService {
   static const String baseUrl = 'http://localhost:5000/api/auth';
 
   Future<Map<String, dynamic>> signup({
-    required String name,
+    required String firstName,
+    required String lastName,
+    required String username,
     required String dob,
     required String gender,
     required String email,
@@ -19,7 +21,9 @@ class AuthService {
       Uri.parse('$baseUrl/signup'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'name': name,
+        'firstName': firstName,
+        'lastName': lastName,
+        'username': username,
         'dob': dob,
         'gender': gender,
         'email': email,

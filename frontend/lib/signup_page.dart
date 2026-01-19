@@ -10,7 +10,9 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -23,7 +25,9 @@ class _SignupPageState extends State<SignupPage> {
   final _authService = AuthService();
 
   Future<void> _handleSignup() async {
-    if (_nameController.text.isEmpty ||
+    if (_firstNameController.text.isEmpty ||
+        _lastNameController.text.isEmpty ||
+        _usernameController.text.isEmpty ||
         _dobController.text.isEmpty ||
         _selectedGender == null ||
         _emailController.text.isEmpty ||
@@ -38,7 +42,9 @@ class _SignupPageState extends State<SignupPage> {
     setState(() => _isLoading = true);
     try {
       final user = await _authService.signup(
-        name: _nameController.text,
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        username: _usernameController.text,
         dob: _dobController.text,
         gender: _selectedGender!,
         email: _emailController.text,
@@ -47,7 +53,7 @@ class _SignupPageState extends State<SignupPage> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Account created! Welcome ${user['name']}')),
+          SnackBar(content: Text('Account created! Welcome ${user['username']}')),
         );
         Navigator.of(context).pop(); // Go back to login
       }
@@ -64,7 +70,9 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _mobileController.dispose();
     _passwordController.dispose();
@@ -159,15 +167,31 @@ class _SignupPageState extends State<SignupPage> {
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Colors.white70,
                                 fontSize: 16,
-                              ),
+                                ),
                         ),
                         const SizedBox(height: 32),
 
-                        // Name Field
+                        // First Name Field
                         _buildTextField(
-                          controller: _nameController,
-                          label: 'Full Name',
+                          controller: _firstNameController,
+                          label: 'First Name',
                           icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Last Name Field
+                        _buildTextField(
+                          controller: _lastNameController,
+                          label: 'Last Name',
+                          icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Username Field
+                        _buildTextField(
+                          controller: _usernameController,
+                          label: 'Username',
+                          icon: Icons.alternate_email,
                         ),
                         const SizedBox(height: 16),
 
