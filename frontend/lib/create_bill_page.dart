@@ -59,15 +59,43 @@ class _CreateBillPageState extends State<CreateBillPage> {
     final name = _billNameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a bill name'), backgroundColor: Colors.orange),
-      );
+        SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                const Text('Please enter a group name', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+      ));
       return;
     }
 
     if (_selectedFriendIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one friend'), backgroundColor: Colors.orange),
-      );
+        SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                const Text('Please select at least one friend', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+      ));
       return;
     }
 
@@ -77,7 +105,26 @@ class _CreateBillPageState extends State<CreateBillPage> {
       await _billService.createBillSplit(widget.token, name, _selectedFriendIds.toList());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bill Split Group Created Successfully!')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Color(0xFF4CA1AF)),
+                const SizedBox(width: 12),
+                const Text(
+                  'Group Created Successfully!',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Color(0xFF4CA1AF), width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
         );
         _billNameController.clear();
         setState(() {
@@ -90,7 +137,22 @@ class _CreateBillPageState extends State<CreateBillPage> {
       if (mounted) {
         setState(() => _isCreating = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.redAccent),
+                const SizedBox(width: 12),
+                Expanded(child: Text('Error: ${e.toString()}', style: const TextStyle(color: Colors.white))),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.redAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
         );
       }
     }

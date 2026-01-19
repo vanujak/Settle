@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/bill_service.dart';
+import 'dart:convert';
 
 class AddExpensePage extends StatefulWidget {
   final String token;
@@ -29,10 +30,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
   bool _isWeightedSplit = false;
   final Set<String> _selectedMemberIds = {};
   final Map<String, TextEditingController> _percentageControllers = {};
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
+    _currentUserId = _getUserIdFromToken(widget.token);
     // Default to split among all members
     for (var member in widget.members) {
       _selectedMemberIds.add(member['_id']);
@@ -40,6 +43,19 @@ class _AddExpensePageState extends State<AddExpensePage> {
       _percentageControllers[member['_id']] = TextEditingController(text: '0');
     }
     _recalculateEvenPercentages();
+  }
+
+  String? _getUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final payload = base64Url.normalize(parts[1]);
+      final resp = utf8.decode(base64Url.decode(payload));
+      final payloadMap = jsonDecode(resp);
+      return payloadMap['id'];
+    } catch (e) {
+      return null;
+    }
   }
 
   void _recalculateEvenPercentages() {
@@ -70,23 +86,65 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
     if (description.isEmpty || amountText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter description and amount'), backgroundColor: Colors.orange),
-      );
+        SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                const Text('Please enter description and amount', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+      ));
       return;
     }
 
     final totalAmount = double.tryParse(amountText);
     if (totalAmount == null || totalAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount'), backgroundColor: Colors.orange),
-      );
+        SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                const Text('Please enter a valid amount', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+      ));
       return;
     }
 
     if (_selectedMemberIds.isEmpty) {
        ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one person to split with'), backgroundColor: Colors.orange),
-      );
+        SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                const Text('Please select at least one person', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+       ));
       return;
     }
 
@@ -102,8 +160,22 @@ class _AddExpensePageState extends State<AddExpensePage> {
       // Allow small tolerance for floating point
       if ((totalPercent - 100).abs() > 0.5) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Percentages must sum to 100% (Current: ${totalPercent.toStringAsFixed(1)}%)'), backgroundColor: Colors.orange),
-        );
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.orangeAccent),
+                const SizedBox(width: 12),
+                Expanded(child: Text('Percentages must sum to 100% (Current: ${totalPercent.toStringAsFixed(1)}%)', style: const TextStyle(color: Colors.white))),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.orangeAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+          ));
         return;
       }
       
@@ -136,14 +208,45 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Expense added successfully!')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Color(0xFF4CA1AF)),
+                const SizedBox(width: 12),
+                const Text('Expense added successfully!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Color(0xFF4CA1AF), width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
         );
         Navigator.pop(context, true); 
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.redAccent),
+                const SizedBox(width: 12),
+                Expanded(child: Text('Error: ${e.toString()}', style: const TextStyle(color: Colors.white))),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.redAccent, width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
         );
         setState(() => _isLoading = false);
       }
@@ -291,8 +394,8 @@ class _AddExpensePageState extends State<AddExpensePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    '${member['firstName']} ${member['lastName']}',
+                                    Text(
+                                    member['_id'] == _currentUserId ? 'Me' : '${member['firstName']} ${member['lastName']}',
                                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                                   ),
                                   Text(

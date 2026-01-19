@@ -24,6 +24,7 @@ class _DashboardPageState extends State<DashboardPage> {
   List<dynamic> _myBills = [];
   bool _isLoadingBills = true;
   late IO.Socket socket;
+  String? _currentUserId;
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -39,28 +40,37 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    _currentUserId = _getUserIdFromToken(widget.token);
     _fetchMyBills();
     _initSocket();
   }
 
   void _initSocket() {
-    socket = IO.io('http://localhost:5000', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-    });
+    print('Initializing Dashboard Socket...');
+    socket = IO.io('http://localhost:5000', IO.OptionBuilder()
+      .setTransports(['websocket'])
+      .disableAutoConnect()
+      .build()
+    );
 
     socket.connect();
 
     socket.onConnect((_) {
-      print('Dashboard Socket connected');
+      print('Dashboard Socket connected: ${socket.id}');
       final userId = _getUserIdFromToken(widget.token);
+      print('Dashboard Joining Room for User ID: $userId');
       if (userId != null) {
         socket.emit('join_user', userId);
+      } else {
+        print('Error: Could not extract User ID from token, cannot join room.');
       }
     });
 
+    socket.onDisconnect((_) => print('Dashboard Socket disconnected'));
+    socket.onConnectError((data) => print('Dashboard Socket connection error: $data'));
+
     socket.on('bill_refresh', (_) {
-      print('Received bill_refresh event');
+      print('Dashboard: Received bill_refresh event via Socket!');
       _fetchMyBills();
     });
   }
@@ -237,7 +247,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         '${bill['members'].length} members • Created by ${bill['createdBy']['username'] == widget.userName ? 'You' : bill['createdBy']['username']}',
                                         style: const TextStyle(color: Colors.white70),
                                       ),
-                                      trailing: bill['createdBy']['username'] == widget.userName
+                                      trailing: (_currentUserId != null && bill['createdBy']['_id'] == _currentUserId)
                                           ? IconButton(
                                               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                                               onPressed: () => _confirmDeleteBill(bill['_id'], bill['name']),

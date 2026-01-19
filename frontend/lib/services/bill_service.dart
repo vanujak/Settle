@@ -86,4 +86,18 @@ class BillService {
       throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to delete bill');
     }
   }
+
+  Future<void> deleteExpense(String token, String billId, String expenseId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/$billId/expense/$expenseId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to delete expense');
+    }
+  }
 }

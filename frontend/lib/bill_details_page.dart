@@ -25,10 +25,12 @@ class _BillDetailsPageState extends State<BillDetailsPage> {
   Map<String, dynamic>? _billDetails;
   bool _isLoading = true;
   late IO.Socket socket;
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
+    _currentUserId = _getUserIdFromToken(widget.token);
     _fetchBillDetails();
     _initSocket();
   }
@@ -105,6 +107,76 @@ class _BillDetailsPageState extends State<BillDetailsPage> {
 
     if (result == true) {
       _fetchBillDetails(); // Refresh after adding expense
+    }
+  }
+
+  Future<void> _confirmDeleteExpense(String expenseId, String description) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF203A43),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFF4CA1AF), width: 1)
+        ),
+        title: const Text('Delete Expense', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text('Delete "$description"?\nThis will recalculate all settlements.', style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+       if (mounted) setState(() => _isLoading = true);
+       try {
+         await _billService.deleteExpense(widget.token, widget.billId, expenseId);
+         await _fetchBillDetails(); 
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Color(0xFF4CA1AF)),
+                    const SizedBox(width: 12),
+                    const Text('Expense deleted', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF203A43),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: Color(0xFF4CA1AF), width: 1),
+                ),
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 2),
+             ),
+           );
+         }
+       } catch (e) {
+         if (mounted) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.error, color: Colors.redAccent),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF203A43),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: Colors.redAccent, width: 1),
+                ),
+                margin: const EdgeInsets.all(16),
+              ),
+            );
+         }
+       }
     }
   }
 
@@ -250,6 +322,8 @@ class _BillDetailsPageState extends State<BillDetailsPage> {
                       itemBuilder: (context, index) {
                         // Show newest first
                         final expense = expenses[expenses.length - 1 - index];
+                        final isPayer = _currentUserId != null && expense['paidBy']['_id'] == _currentUserId;
+
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           title: Text(
@@ -260,9 +334,23 @@ class _BillDetailsPageState extends State<BillDetailsPage> {
                             'Paid by ${expense['paidBy']['firstName']}',
                             style: const TextStyle(color: Colors.white70),
                           ),
-                          trailing: Text(
-                            'Rs. ${expense['amount']}',
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Rs. ${expense['amount']}',
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              if (isPayer) ...[
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.white54, size: 20),
+                                  onPressed: () => _confirmDeleteExpense(expense['_id'], expense['description']),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
+                            ],
                           ),
                         );
                       },

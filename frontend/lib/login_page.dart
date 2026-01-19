@@ -30,7 +30,26 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Welcome back, ${user['username']}!')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Color(0xFF4CA1AF)),
+                const SizedBox(width: 12),
+                Text(
+                  'Welcome back, ${user['firstName']}!',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF203A43),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Color(0xFF4CA1AF), width: 1),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
         );
         // Navigate to dashboard
         Navigator.of(context).pushReplacement(

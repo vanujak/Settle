@@ -294,12 +294,57 @@ router.delete('/:id', protect, async (req, res) => {
         // Emit update to all members so their dashboard removes the bill
         if (req.io) {
             members.forEach(memberId => {
-                console.log(`Socket: Emitting bill_refresh to user ${memberId}`);
-                req.io.to(memberId.toString()).emit('bill_refresh');
+                const idStr = String(memberId); // Force string conversion
+                console.log(`Socket: Emitting bill_refresh to user ${idStr}`);
+                req.io.to(idStr).emit('bill_refresh');
             });
         }
 
         res.json({ message: 'Bill split group removed' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @desc    Delete an expense
+// @route   DELETE /api/bills/:id/expense/:expenseId
+// @access  Private
+router.delete('/:id/expense/:expenseId', protect, async (req, res) => {
+    try {
+        const bill = await BillSplit.findById(req.params.id);
+
+        if (!bill) {
+            return res.status(404).json({ message: 'Bill split group not found' });
+        }
+
+        // Find the expense
+        const expense = bill.expenses.id(req.params.expenseId);
+
+        if (!expense) {
+            return res.status(404).json({ message: 'Expense not found' });
+        }
+
+        // Check verification: Only the payer can delete
+        if (expense.paidBy.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Not authorized to delete this expense' });
+        }
+
+        // Remove expense
+        bill.expenses.pull(req.params.expenseId);
+
+        await bill.save();
+
+        // Emit update
+        if (req.io) {
+            const members = bill.members;
+            members.forEach(memberId => {
+                const idStr = String(memberId);
+                req.io.to(idStr).emit('bill_refresh');
+            });
+        }
+
+        res.json({ message: 'Expense removed' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
