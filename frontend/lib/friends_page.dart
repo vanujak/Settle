@@ -173,32 +173,13 @@ class _FriendsPageState extends State<FriendsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'My Friends',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
-                children: [
-                   IconButton(
-                    onPressed: _fetchFriends,
-                    icon: const Icon(Icons.refresh, color: Colors.white, size: 28),
-                    tooltip: 'Refresh List',
-                  ),
-                  IconButton(
-                    onPressed: _showAddFriendDialog,
-                    icon: const Icon(Icons.person_add, color: Colors.white, size: 28),
-                    tooltip: 'Add Friend',
-                  ),
-                ],
-              ),
-            ],
+          const Text(
+            'My Friends',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 24),
           Expanded(
@@ -249,6 +230,23 @@ class _FriendsPageState extends State<FriendsPage> {
                       );
                     },
                   ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _showAddFriendDialog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CA1AF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text(
+                'Add Friend',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
         ],
       ),

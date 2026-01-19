@@ -213,15 +213,10 @@ class _BillDetailsPageState extends State<BillDetailsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.billName),
+        title: Text('${widget.billName} Summary'),
         backgroundColor: const Color(0xFF203A43),
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchBillDetails,
-          )
-        ],
+
       ),
       body: Container(
         height: double.infinity,
@@ -285,23 +280,9 @@ class _BillDetailsPageState extends State<BillDetailsPage> {
               const SizedBox(height: 32),
               
               // Expenses History Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                   const Text(
-                    'Recent Expenses',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _navigateToAddExpense,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Expense'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CA1AF),
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
+              const Text(
+                'Recent Expenses',
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               expenses.isEmpty

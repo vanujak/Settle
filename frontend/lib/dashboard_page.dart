@@ -244,7 +244,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                       ),
                                       subtitle: Text(
-                                        '${bill['members'].length} members • Created by ${bill['createdBy']['username'] == widget.userName ? 'You' : bill['createdBy']['username']}',
+                                        '${bill['members'].length} members • Created by ${(_currentUserId != null && bill['createdBy']['_id'] == _currentUserId) ? 'Me' : bill['createdBy']['username']}',
                                         style: const TextStyle(color: Colors.white70),
                                       ),
                                       trailing: (_currentUserId != null && bill['createdBy']['_id'] == _currentUserId)
