@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class AuthService {
   // Use http://10.0.2.2:5000 for Android Emulator
   // Use http://localhost:5000 for iOS Simulator / Web
   // Use your machine's IP address for physical devices
-  static const String baseUrl = 'http://localhost:5000/api/auth';
+  static String get baseUrl => '${Config.apiUrl}/auth';
 
   Future<Map<String, dynamic>> signup({
     required String firstName,

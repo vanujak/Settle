@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class FriendService {
-  final String baseUrl = 'http://localhost:5000/api/friends';
+  String get baseUrl => '${Config.apiUrl}/friends';
 
   Future<List<dynamic>> getFriends(String token) async {
     final response = await http.get(
