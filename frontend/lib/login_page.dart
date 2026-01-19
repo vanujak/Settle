@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => DashboardPage(
-              userName: user['username'],
+              userName: user['firstName'],
               token: user['token'],
             ),
           ),

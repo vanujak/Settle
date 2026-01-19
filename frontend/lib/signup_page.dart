@@ -53,7 +53,7 @@ class _SignupPageState extends State<SignupPage> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Account created! Welcome ${user['username']}')),
+          SnackBar(content: Text('Account created! Welcome ${user['firstName']}')),
         );
         Navigator.of(context).pop(); // Go back to login
       }

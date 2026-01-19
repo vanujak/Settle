@@ -60,6 +60,7 @@ connectDB();
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/friends', require('./routes/friends'));
+app.use('/api/bills', require('./routes/billSplits'));
 
 const PORT = process.env.PORT || 5000;
 
