@@ -348,7 +348,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                             if (!value) _recalculateEvenPercentages();
                           });
                         },
-                        activeColor: const Color(0xFF4CA1AF),
+                        activeThumbColor: const Color(0xFF4CA1AF),
                       ),
                       const Text('Weighted (%)', style: TextStyle(color: Colors.white70, fontSize: 12)),
                     ],

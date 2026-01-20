@@ -7,6 +7,7 @@ import 'friends_page.dart';
 import 'services/bill_service.dart';
 import 'bill_details_page.dart';
 import 'add_expense_page.dart';
+import 'config.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userName;
@@ -46,19 +47,29 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _initSocket() {
-    print('Initializing Dashboard Socket...');
-    socket = IO.io('http://localhost:5000', IO.OptionBuilder()
+    print('Initializing Dashboard Socket to ${Config.baseUrl}...');
+    socket = IO.io(Config.baseUrl, IO.OptionBuilder()
       .setTransports(['websocket'])
       .disableAutoConnect()
+      .enableForceNew()
       .build()
     );
-
-    socket.connect();
 
     socket.onConnect((_) {
       print('Dashboard Socket connected: ${socket.id}');
       final userId = _getUserIdFromToken(widget.token);
       print('Dashboard Joining Room for User ID: $userId');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connected to Realtime Server (${socket.id})'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+
       if (userId != null) {
         socket.emit('join_user', userId);
       } else {
@@ -66,13 +77,48 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     });
 
-    socket.onDisconnect((_) => print('Dashboard Socket disconnected'));
-    socket.onConnectError((data) => print('Dashboard Socket connection error: $data'));
+    socket.onDisconnect((_) {
+       print('Dashboard Socket disconnected');
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(
+             content: Text('Disconnected from Realtime Server'),
+             backgroundColor: Colors.redAccent,
+             duration: Duration(seconds: 2),
+           ),
+         );
+       }
+    });
+    
+    socket.onConnectError((data) {
+      print('Dashboard Socket connection error: $data');
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(
+             content: Text('Connection Error: $data'),
+             backgroundColor: Colors.orange,
+             duration: const Duration(seconds: 3),
+           ),
+         );
+       }
+    });
 
     socket.on('bill_refresh', (_) {
       print('Dashboard: Received bill_refresh event via Socket!');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(
+             content: Text('New updates received!'),
+             backgroundColor: Color(0xFF4CA1AF),
+             duration: Duration(milliseconds: 1000),
+           ),
+        );
+      }
       _fetchMyBills();
     });
+
+    // Connect AFTER registering listeners
+    socket.connect();
   }
 
   String? _getUserIdFromToken(String token) {

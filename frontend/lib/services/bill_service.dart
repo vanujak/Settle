@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../config.dart';
+
 class BillService {
-  final String baseUrl = 'http://localhost:5000/api/bills';
+  String get baseUrl => '${Config.apiUrl}/bills';
 
   Future<void> createBillSplit(String token, String name, List<String> friendIds) async {
     final response = await http.post(
